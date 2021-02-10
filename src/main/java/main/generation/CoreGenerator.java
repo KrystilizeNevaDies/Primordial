@@ -3,7 +3,7 @@ package main.generation;
 import java.util.ArrayList;
 
 import ee.jjanno.libjsimplex.noise.cpu.SimplexNoiseCpu;
-import main.generation.world.PrimordialWorld;
+import main.world.PrimordialWorld;
 import net.minestom.server.instance.block.Block;
 
 public class CoreGenerator {
@@ -19,20 +19,46 @@ public class CoreGenerator {
 		int chunkXMin =  chunkX * 16;
 		int chunkZMin =  chunkZ * 16;
 		
+		
+		float rarity = (float) 0.003;
+		
+		/// CPU:
 		for (int x = chunkXMin; x < chunkXMin + 16; x++)
-				for (int z = chunkZMin; z < chunkZMin + 16; z++) {
-					double noise = SimplexNoiseCpu.noise(x, z);
+			for (int z = chunkZMin; z < chunkZMin + 16; z++) {
+				
+				float noise = (float) SimplexNoiseCpu.noise(x * rarity, z * rarity) + 1;
+				
+				noise *= 64;
+				
+				for (int y = 0; y < noise; y++) {
+					blockIDs.add(Block.STONE.getBlockId());
+					posX.add(x);
+					posY.add(y);
+					posZ.add(z );
+				}
+			}
+		//*/
+		
+		/*// GPU:
+		
+		float[] noise = SimplexNoiseGpu2D.calculate(chunkXMin * rarity, chunkZMin * rarity, 16, 16, rarity);
+		
+		for (int x = 0; x < 16; x++)
+				for (int z = 0; z < 16; z++) {
 					
-					noise *= 5;
+					int i = x + z*16;
 					
-					for (int y = 0; y < noise; y++) {
+					noise[i] += 1;
+					noise[i] *= 64;
+					
+					for (int y = 0; y < noise[i]; y++) {
 						blockIDs.add(Block.STONE.getBlockId());
-						posX.add(x);
+						posX.add(x + chunkXMin);
 						posY.add(y);
-						posZ.add(z);
+						posZ.add(z + chunkZMin);
 					}
 				}
-		
+		//*/
 		
 		Short[] blockArray = blockIDs.toArray(new Short[blockIDs.size()]);
 		Integer[] posXArray = posX.toArray(new Integer[posX.size()]);

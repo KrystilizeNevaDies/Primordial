@@ -7,21 +7,28 @@ import java.util.Map;
 import main.config.biome.BiomeConfig;
 import main.generation.CoreGenerator;
 import main.generation.biomes.BiomeSelector;
+import main.thread.AsyncAction;
+import main.thread.GenerationThreadPool;
 import net.minestom.server.instance.ChunkGenerator;
 import net.minestom.server.instance.ChunkPopulator;
+import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.batch.ChunkBatch;
 import net.minestom.server.utils.NamespaceID;
 import net.minestom.server.world.biomes.Biome;
 import net.minestom.server.world.biomes.Biome.Category;
 import net.minestom.server.world.biomes.BiomeEffects;
 
-public class MinestomBridgeGenerator implements ChunkGenerator {
+public class MinestomTranslationLayer implements ChunkGenerator {
 	
 	private Map<BiomeConfig, Biome> biomeMapping = new HashMap<BiomeConfig, Biome>();
 	
 	private BiomeSelector selector;
 	
-	public MinestomBridgeGenerator(Map<String, BiomeConfig> biomeConfigs) {
+	private InstanceContainer instance;
+	
+	public MinestomTranslationLayer(Map<String, BiomeConfig> biomeConfigs, InstanceContainer instance) {
+		this.instance = instance;
+		
 		// Create selector used to determine biomes
 		this.selector = new BiomeSelector(biomeConfigs, (int) (Math.random() * Integer.MAX_VALUE));
 		
@@ -51,7 +58,18 @@ public class MinestomBridgeGenerator implements ChunkGenerator {
     @Override
     public void generateChunkData(ChunkBatch batch, int chunkX, int chunkZ) {
     	// Generate chunk + schedule placement
-		CoreGenerator.generateChunk(chunkX, chunkZ);
+    	instance.scheduleNextTick((instance) -> {
+    		// Create Async task
+    		// Runnable task = new AsyncAction<Integer, Integer>(CoreGenerator::generateChunk, chunkX, chunkZ);
+    		Runnable task = new AsyncAction<Integer, Integer>((x, z) -> {
+    			long time = System.currentTimeMillis();
+    			CoreGenerator.generateChunk(x, z);
+    			System.out.println("Chunk at (" + x + ", " + z + ") took " + (System.currentTimeMillis() - time) + "ms");
+    		}, chunkX, chunkZ);
+    		
+    		// Run task
+    		GenerationThreadPool.EXECUTOR.execute(task);
+    	});
     }
     
     @Override

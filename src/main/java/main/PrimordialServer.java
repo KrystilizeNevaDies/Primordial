@@ -37,7 +37,7 @@ public class PrimordialServer {
     	switch(config.getString("Engine")) {
     		case "Minestom":
     			// Start minestom server
-    			MinestomServer.main(new String[] {config.toFileString()});
+    			MinestomServer.start(new String[] {config.toFileString()});
     			break;
     		default:
     			// Error, engine not found 

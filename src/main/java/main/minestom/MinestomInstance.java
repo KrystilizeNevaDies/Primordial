@@ -2,8 +2,7 @@ package main.minestom;
 
 import java.util.UUID;
 
-import main.generation.world.PrimordialChunk;
-import main.generation.world.PrimordialWorld;
+import main.world.PrimordialWorld;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.batch.BlockBatch;
 import net.minestom.server.instance.block.Block;
@@ -13,10 +12,6 @@ public class MinestomInstance extends InstanceContainer implements PrimordialWor
 	
 	public MinestomInstance(UUID uniqueId, DimensionType dimensionType) {
 		super(uniqueId, dimensionType, null);
-	}
-	
-	public PrimordialChunk getPrimordialChunk(int x, int z) {
-		return new MinestomChunk(getChunk(x, z));
 	}
 	
 	@Override
@@ -42,46 +37,42 @@ public class MinestomInstance extends InstanceContainer implements PrimordialWor
 
 	@Override
 	public void setBlockGroup(Short[] blockIDs, Integer[] arrayX, Integer[] arrayY, Integer[] arrayZ) {
-		// Schedule everything to be done next tick
-		this.scheduleNextTick((instance) -> {
+		// Create BlockBatch
+		BlockBatch batch = this.createBlockBatch();
+		
+		// Check for zero blocks
+		if (blockIDs.length == 0)
+			return;
 			
-			// Create BlockBatch
-			BlockBatch batch = instance.createBlockBatch();
+		int minX = arrayX[0];
+		int minZ = arrayZ[0];
+		int maxX = arrayX[0];
+		int maxZ = arrayZ[0];
+		
+		// Iterate through blocks and add to block batch
+		for (int i = 0; i < blockIDs.length; i++) {
+			int x = arrayX[i];
+			int y = arrayY[i];
+			int z = arrayZ[i];
 			
-			int minX = arrayX[0];
-			int minZ = arrayZ[0];
-			int maxX = arrayX[0];
-			int maxZ = arrayZ[0];
+			// Get (min/max)s
+			if (x < minX) minX = x;
+			if (z < minZ) minZ = z;
+			if (x > maxX) maxX = x;
+			if (z > maxZ) maxZ = z;
 			
-			// Iterate through blocks and add to block batch
-			for (int i = 0; i < blockIDs.length; i++) {
-				int x = arrayX[i];
-				int y = arrayY[i];
-				int z = arrayZ[i];
+			batch.setBlockStateId(x, y, z, blockIDs[i]);
+		}
+		
+		// Ensure that necessary chunks are loaded:
+		for (int chunkX = minX; chunkX < maxX; chunkX += 16)
+			for (int chunkZ = minZ; chunkZ < maxZ; chunkZ += 16) {
 				
-				// Get (min/max)s
-				if (x < minX) minX = x;
-				if (z < minZ) minZ = z;
-				if (x > maxX) maxX = x;
-				if (z > maxZ) maxZ = z;
-				
-				batch.setBlockStateId(x, y, z, blockIDs[i]);
+				if (this.getChunk(chunkX / 16, chunkZ / 16) == null)
+					this.loadChunk(chunkX / 16, chunkZ / 16, null);
 			}
-			
-			System.out.println("DEBUG");
-			
-			// Ensure that necessary chunks are loaded:
-			for (int chunkX = minX; chunkX < maxX; chunkX += 16)
-				for (int chunkZ = minZ; chunkZ < maxZ; chunkZ += 16) {
-					
-					System.out.println(chunkX / 16 + ":" + chunkZ / 16);
-					
-					if (this.getChunk(chunkX / 16, chunkZ / 16) == null)
-						this.loadChunk(chunkX / 16, chunkZ / 16, null);
-				}
-			
-			// Flush
-			batch.flush(null);
-		});
+		
+		// Flush
+		batch.flush(null);
 	}
 }

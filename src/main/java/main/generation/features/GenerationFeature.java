@@ -1,6 +1,6 @@
 package main.generation.features;
 
-import main.generation.world.PrimordialWorld;
+import main.world.PrimordialWorld;
 
 public interface GenerationFeature {
 	/**

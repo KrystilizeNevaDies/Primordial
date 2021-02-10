@@ -6,24 +6,27 @@ import java.util.UUID;
 import main.config.DefaultConfig;
 import main.config.world.WorldConfig;
 import main.generation.CoreGenerator;
-import main.minestom.MinestomBridgeGenerator;
+import main.minestom.MinestomTranslationLayer;
 import main.minestom.MinestomInstance;
 import maml.MAMLFile;
 import maml.values.MAMLTable;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerLoginEvent;
+import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.ChunkGenerator;
 import net.minestom.server.instance.InstanceManager;
+import net.minestom.server.instance.block.Block;
 import net.minestom.server.utils.Position;
 import net.minestom.server.world.DimensionType;
 
 public class MinestomServer {
 	
-	static WorldConfig config;
+	private static WorldConfig config;
 	
-    public static void main(String[] args) {
+    public static void start(String[] args) {
     	
     	// Get config
     	MAMLTable config = new MAMLTable();
@@ -56,6 +59,18 @@ public class MinestomServer {
             event.setSpawningInstance(instance);
             player.setRespawnPoint(new Position(0, 2, 0));
         });
+        globalEventHandler.addEventCallback(PlayerSpawnEvent.class, event -> {
+        	Player player = event.getPlayer();
+        	player.setGameMode(GameMode.CREATIVE);
+        	
+        	Position playerPos = player.getPosition();
+        	
+        	while(player.getInstance().getBlock(playerPos.toBlockPosition()) != Block.AIR) {
+        		player.getPosition().add(0, 1, 0);
+        	}
+        	
+        });
+        
         
         // Register config
         switch (config.getString("Config")) {
@@ -66,7 +81,7 @@ public class MinestomServer {
         }
         
         // Set the ChunkGenerator
-        ChunkGenerator generator = new MinestomBridgeGenerator(MinestomServer.config.getBiomeConfigs());
+        ChunkGenerator generator = new MinestomTranslationLayer(MinestomServer.config.getBiomeConfigs(), instance);
         instance.setChunkGenerator(generator);
         
         // Start the server on port 25565

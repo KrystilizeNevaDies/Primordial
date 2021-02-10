@@ -1,14 +1,6 @@
-package main.generation.world;
+package main.world;
 
 public interface PrimordialWorld {
-	/**
-	 * Gets the chunk at the position
-	 * 
-	 * @param x x position of chunk
-	 * @param z z position of chunk
-	 * @return PrimordialChunk the returned chunk
-	 */
-	public PrimordialChunk getPrimordialChunk(int x, int z);
 	
 	/**
 	 * Sets a block at specified position (very slow)
