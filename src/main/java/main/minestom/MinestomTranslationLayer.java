@@ -74,17 +74,10 @@ public class MinestomTranslationLayer implements ChunkGenerator {
     
     @Override
     public void fillBiomes(Biome[] biomes, int chunkX, int chunkZ) {
-    	for (int x = 0; x < 4; x++)
-    		for (int y = 0; y < 64; y++)
-    			for (int z = 0; z < 4; z++) {
-    				// 1024 biome IDs, ordered by x then z then y, in 4󫶘 blocks
-    				int posX = x * 4;
-    				int posY = y * 4;
-    				int posZ = z * 4;
-    				int i = x + z*4 + y*16;
-    				
-    				biomes[i] = biomeMapping.get(selector.getBiome(posX, posY, posZ));
-    			}
+    	BiomeConfig[] configs = selector.getBiomes(chunkX, chunkZ);
+    	for (int i = 0; i < biomes.length; i++) {
+    		biomes[i] = biomeMapping.get(configs[i]);
+    	}
     }
     
     @Override

@@ -5,16 +5,16 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import de.articdive.jnoise.JNoise;
+import ee.jjanno.libjsimplex.noise.gpu.SimplexNoiseGpu3D;
 import main.config.biome.BiomeConfig;
 import main.util.Pair;
 
 public class BiomeSelector {
 	private Map<UUID, BiomeConfig> biomes;
-	private JNoise temperatureNoise;
-	private JNoise humidityNoise;
-	private JNoise elevationNoise;
-	private JNoise vegetationNoise;
+	private int temperatureNoiseSeed;
+	private int humidityNoiseSeed;
+	private int elevationNoiseSeed;
+	private int vegetationNoiseSeed;
 	
 	/**
 	 * Creates a BiomeSelecter using the specified biomes
@@ -27,12 +27,11 @@ public class BiomeSelector {
 		Random random = new Random();
 		random.setSeed(seed);
 		
-		
-		
-		this.temperatureNoise = JNoise.newBuilder().openSimplex().setFrequency(0.5).setSeed(random.nextInt()).build();
-		this.humidityNoise = JNoise.newBuilder().openSimplex().setFrequency(0.5).setSeed(random.nextInt()).build();
-		this.elevationNoise = JNoise.newBuilder().openSimplex().setFrequency(0.5).setSeed(random.nextInt()).build();
-		this.vegetationNoise = JNoise.newBuilder().openSimplex().setFrequency(0.5).setSeed(random.nextInt()).build();
+		// Generate noise seeds
+		this.temperatureNoiseSeed = random.nextInt();
+		this.humidityNoiseSeed = random.nextInt();
+		this.elevationNoiseSeed = random.nextInt();
+		this.vegetationNoiseSeed = random.nextInt();
 		
 		// Convert biomes, give random UUIDs
 		Map<UUID, BiomeConfig> biomeList = new HashMap<UUID, BiomeConfig>();
@@ -45,31 +44,41 @@ public class BiomeSelector {
 		this.biomes = biomeList;
 	}
 	
-	public BiomeConfig getBiome(int x, int y, int z) {
+	public BiomeConfig[] getBiomes(int chunkX, int chunkZ) {
+		
+		float frequency = (float) 0.03;
+		
 		// Get noises
-		double temperature = temperatureNoise.getNoise(x, y, z);
-		double humidity = humidityNoise.getNoise(x, y, z);
-		double elevation = elevationNoise.getNoise(x, y, z);
-		double vegetation = vegetationNoise.getNoise(x, y, z);
+		float[] temperature = SimplexNoiseGpu3D.calculate(temperatureNoiseSeed + chunkX * frequency, 0, temperatureNoiseSeed + chunkZ * frequency, 4, 4, 64, frequency);
+		float[] humidity = SimplexNoiseGpu3D.calculate(humidityNoiseSeed + chunkX * frequency, 0, humidityNoiseSeed + chunkZ * frequency, 4, 4, 64, frequency);
+		float[] elevation = SimplexNoiseGpu3D.calculate(elevationNoiseSeed + chunkX * frequency, 0, elevationNoiseSeed + chunkZ * frequency, 4, 4, 64, frequency);
+		float[] vegetation = SimplexNoiseGpu3D.calculate(vegetationNoiseSeed + chunkX * frequency, 0, vegetationNoiseSeed + chunkZ * frequency, 4, 4, 64, frequency);
 		
-		// Pair with match index and biomeconfig
-		var match = new Pair<Double, BiomeConfig>(1.0, null);
+		// return array
+		BiomeConfig[] returnArray = new BiomeConfig[1024];
 		
-		// Find best biome
-		biomes.forEach((uuid, biome) -> {
+		for (int i = 0; i < returnArray.length; i++) {
+			// Pair with match index and biomeconfig
+			var match = new Pair<Double, BiomeConfig>(1.0, null);
 			
-			// Fit the biome to the properties
-			double biomeFit = matchBiome(biome, temperature, humidity, elevation, vegetation);
-			
-			// If biome is better then recorded, place into match
-			if (biomeFit < match.getFirst() || match.getSecond() == null) {
-				match.setFirst(biomeFit);
-				match.setSecond(biome);
+			// Test each biome
+			for (BiomeConfig biome : biomes.values()) {
+				
+				// Fit the biome to the properties
+				double biomeFit = matchBiome(biome, temperature[i], humidity[i], elevation[i], vegetation[i]);
+				
+				// If biome is better then recorded, place into match
+				if (biomeFit < match.getFirst() || match.getSecond() == null) {
+					match.setFirst(biomeFit);
+					match.setSecond(biome);
+				}
 			}
-		});
+			
+			// Set best match to array
+			returnArray[i] = match.getSecond();
+		}
 		
-		// Return best biome
-		return match.getSecond();
+		return returnArray;
 	}
 	
 	/**
