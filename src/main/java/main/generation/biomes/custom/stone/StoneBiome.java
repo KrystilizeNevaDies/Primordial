@@ -1,11 +1,14 @@
-package main.generation.biomes.custom;
+package main.generation.biomes.custom.stone;
 
 import java.util.Collection;
 import java.util.List;
 
 import main.config.biome.BiomeConfig;
-import main.generation.features.GenerationFeature;
+import main.generation.features.GenerationComponent;
+import main.generation.features.custom.components.BoulderComponent;
+import main.generation.features.custom.components.SquareTower;
 import main.util.Pair;
+import net.minestom.server.instance.block.Block;
 
 /**
  * A biome consisting of types of stone.
@@ -39,21 +42,22 @@ public class StoneBiome implements BiomeConfig {
 	}
 
 	@Override
-	public Collection<GenerationFeature> getFeatures() {
-		// TODO: Features for stone biome
-		return List.of();
-	}
-
-	@Override
 	public Integer getRarity() {
 		// Should not be very rare
 		return 60;
 	}
 
 	@Override
-	public Collection<String> getTerrainBlocks() {
+	public List<Short> getTerrainBlocks() {
 		// Bunch of stones
-		return List.of("STONE", "GRANITE", "COBBLESTONE", "STONE_BRICKS", "ANDESITE", "DIORITE");
+		return List.of(
+			Block.STONE.getBlockId(),
+			Block.GRANITE.getBlockId(),
+			Block.COBBLESTONE.getBlockId(),
+			Block.STONE_BRICKS.getBlockId(),
+			Block.ANDESITE.getBlockId(),
+			Block.DIORITE.getBlockId()
+		);
 	}
 
 	@Override
@@ -74,5 +78,10 @@ public class StoneBiome implements BiomeConfig {
 	@Override
 	public int getWaterFogColor() {
 		return 0x50533;
+	}
+
+	@Override
+	public Collection<GenerationComponent> getComponents() {
+		return List.of(new SquareTower(this), new BoulderComponent());
 	}
 }

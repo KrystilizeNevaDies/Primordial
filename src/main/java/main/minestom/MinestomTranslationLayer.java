@@ -21,16 +21,19 @@ import net.minestom.server.world.biomes.BiomeEffects;
 public class MinestomTranslationLayer implements ChunkGenerator {
 	
 	private Map<BiomeConfig, Biome> biomeMapping = new HashMap<BiomeConfig, Biome>();
-	
 	private BiomeSelector selector;
-	
 	private InstanceContainer instance;
+	private CoreGenerator generator;
 	
-	public MinestomTranslationLayer(Map<String, BiomeConfig> biomeConfigs, InstanceContainer instance) {
+	
+	public MinestomTranslationLayer(Map<String, BiomeConfig> biomeConfigs, MinestomInstance instance) {
 		this.instance = instance;
 		
 		// Create selector used to determine biomes
 		this.selector = new BiomeSelector(biomeConfigs, (int) (Math.random() * Integer.MAX_VALUE));
+		
+		// Create generator
+		this.generator = new CoreGenerator(instance, selector); 
 		
 		// Generate minestom biomes
 		biomeConfigs.forEach((name, biome) -> {
@@ -57,15 +60,15 @@ public class MinestomTranslationLayer implements ChunkGenerator {
 	
     @Override
     public void generateChunkData(ChunkBatch batch, int chunkX, int chunkZ) {
-    	// Generate chunk + schedule placement
+    	// Schedule generation on next instance tick
     	instance.scheduleNextTick((instance) -> {
     		// Create Async task
-    		// Runnable task = new AsyncAction<Integer, Integer>(CoreGenerator::generateChunk, chunkX, chunkZ);
-    		Runnable task = new AsyncAction<Integer, Integer>((x, z) -> {
+    		// Runnable task = new AsyncAction<Integer, Integer>(chunkX, chunkZ, CoreGenerator::generateChunk);
+    		Runnable task = new AsyncAction<Integer, Integer>(chunkX, chunkZ, (x, z) -> {
     			long time = System.currentTimeMillis();
-    			CoreGenerator.generateChunk(x, z);
+    			generator.generateChunk(x, z);
     			System.out.println("Chunk at (" + x + ", " + z + ") took " + (System.currentTimeMillis() - time) + "ms");
-    		}, chunkX, chunkZ);
+    		});
     		
     		// Run task
     		GenerationThreadPool.EXECUTOR.execute(task);

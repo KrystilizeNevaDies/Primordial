@@ -1,13 +1,13 @@
 package main;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.UUID;
 
 import main.config.DefaultConfig;
 import main.config.world.WorldConfig;
-import main.generation.CoreGenerator;
-import main.minestom.MinestomTranslationLayer;
 import main.minestom.MinestomInstance;
+import main.minestom.MinestomTranslationLayer;
 import maml.MAMLFile;
 import maml.values.MAMLTable;
 import net.minestom.server.MinecraftServer;
@@ -41,13 +41,11 @@ public class MinestomServer {
         
         // Create the instance
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
-        MinestomInstance instance = new MinestomInstance(UUID.randomUUID(), DimensionType.OVERWORLD);
+        // TODO: Extract seed to config
+        MinestomInstance instance = new MinestomInstance(UUID.randomUUID(), DimensionType.OVERWORLD, new Random().nextInt());
         
         // Register instance
-        // Minestom
         instanceManager.registerInstance(instance);
-        // Primordial
-        CoreGenerator.setWorld(instance);
         
         // Enable the auto chunk loading (when players come close)
         instance.enableAutoChunkLoad(true);
@@ -83,6 +81,13 @@ public class MinestomServer {
         // Set the ChunkGenerator
         ChunkGenerator generator = new MinestomTranslationLayer(MinestomServer.config.getBiomeConfigs(), instance);
         instance.setChunkGenerator(generator);
+        
+        // Load some chunks
+        int size = 50;
+        for (int x = -size; x < size; x++)
+        	for (int z = -size; z < size; z++) {
+        		instance.loadChunk(x, z);
+        	}
         
         // Start the server on port 25565
         minecraftServer.start("localhost", 25565);

@@ -80,6 +80,41 @@ public class BiomeSelector {
 		
 		return returnArray;
 	}
+	/**
+	 * Gets the best fitting biome for this chunk (slow)
+	 * 
+	 * @param chunkX
+	 * @param chunkZ
+	 * @return
+	 */
+	public BiomeConfig getBiome(int chunkX, int chunkZ) {
+		
+		float frequency = (float) 0.03;
+		
+		// Get noises
+		float temperature = SimplexNoiseGpu3D.calculate(temperatureNoiseSeed + chunkX * frequency, 0, temperatureNoiseSeed + chunkZ * frequency, 1, 1, 1, frequency)[0];
+		float humidity = SimplexNoiseGpu3D.calculate(humidityNoiseSeed + chunkX * frequency, 0, humidityNoiseSeed + chunkZ * frequency, 1, 1, 1, frequency)[0];
+		float elevation = SimplexNoiseGpu3D.calculate(elevationNoiseSeed + chunkX * frequency, 0, elevationNoiseSeed + chunkZ * frequency, 1, 1, 1, frequency)[0];
+		float vegetation = SimplexNoiseGpu3D.calculate(vegetationNoiseSeed + chunkX * frequency, 0, vegetationNoiseSeed + chunkZ * frequency, 1, 1, 1, frequency)[0];
+		
+		// Pair with match index and biomeconfig
+		var match = new Pair<Double, BiomeConfig>(1.0, null);
+		
+		// Test each biome
+		for (BiomeConfig biome : biomes.values()) {
+			
+			// Fit the biome to the properties
+			double biomeFit = matchBiome(biome, temperature, humidity, elevation, vegetation);
+			
+			// If biome is better then recorded, place into match
+			if (biomeFit < match.getFirst() || match.getSecond() == null) {
+				match.setFirst(biomeFit);
+				match.setSecond(biome);
+			}
+		}
+		
+		return match.getSecond();
+	}
 	
 	/**
 	 * Matches the biome with the specified properties and returns a double between 0 and 1

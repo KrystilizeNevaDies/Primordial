@@ -1,8 +1,9 @@
 package main.config.biome;
 
 import java.util.Collection;
+import java.util.List;
 
-import main.generation.features.GenerationFeature;
+import main.generation.features.GenerationComponent;
 import main.util.Pair;
 
 public interface BiomeConfig {
@@ -75,11 +76,11 @@ public interface BiomeConfig {
 	}
 	
 	/**
-	 * Gets a list of all biome-specific features to apply when generating this biome.
+	 * Gets a list of all biome-specific components to apply when generating this biome.
 	 * 
-	 * @return Collection the collection of features
+	 * @return Collection the collection of components
 	 */
-	public Collection<GenerationFeature> getFeatures();
+	public Collection<GenerationComponent> getComponents();
 	
 	/**
 	 * Gets the rarity of this biome.
@@ -91,9 +92,9 @@ public interface BiomeConfig {
 	/**
 	 * Gets the blocks that make up the terrain of this biome
 	 * 
-	 * @return Collection<String> BlockIDs of the latest minecraft version e.g. List.of("STONE", "GRASS")
+	 * @return Collection<Short> BlockIDs of the latest minecraft version e.g. List.of(Block.STONE.getBlockID(), Block.GRASS.getBlockID())
 	 */
-	public Collection<String> getTerrainBlocks();
+	public List<Short> getTerrainBlocks();
 	
 	/**
 	 * Gets the fog color of this biome.

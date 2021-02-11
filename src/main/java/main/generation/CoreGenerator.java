@@ -2,15 +2,22 @@ package main.generation;
 
 import java.util.ArrayList;
 
-import ee.jjanno.libjsimplex.noise.cpu.SimplexNoiseCpu;
+import ee.jjanno.libjsimplex.noise.gpu.SimplexNoiseGpu2D;
+import main.generation.biomes.BiomeSelector;
 import main.world.PrimordialWorld;
 import net.minestom.server.instance.block.Block;
 
 public class CoreGenerator {
 	
-	private static PrimordialWorld world;
+	private PrimordialWorld world;
+	private BiomeSelector selector;
 	
-	public static void generateChunk(int chunkX, int chunkZ) {
+	public CoreGenerator(PrimordialWorld world, BiomeSelector selector) {
+		this.world = world;
+		this.selector = selector;
+	}
+	
+	public void generateChunk(int chunkX, int chunkZ) {
 		ArrayList<Short> blockIDs = new ArrayList<Short>();
 		ArrayList<Integer> posX = new ArrayList<Integer>();
 		ArrayList<Integer> posY = new ArrayList<Integer>();
@@ -20,30 +27,13 @@ public class CoreGenerator {
 		int chunkZMin =  chunkZ * 16;
 		
 		
-		float rarity = (float) 0.003;
+		float frequency = (float) 0.003;
 		
-		/// CPU:
-		for (int x = chunkXMin; x < chunkXMin + 16; x++)
-			for (int z = chunkZMin; z < chunkZMin + 16; z++) {
-				
-				float noise = (float) SimplexNoiseCpu.noise(x * rarity, z * rarity) + 1;
-				
-				noise *= 64;
-				
-				for (int y = 0; y < noise; y++) {
-					blockIDs.add(Block.STONE.getBlockId());
-					posX.add(x);
-					posY.add(y);
-					posZ.add(z );
-				}
-			}
-		//*/
+		float[] noise = SimplexNoiseGpu2D.calculate(chunkXMin * frequency, chunkZMin * frequency, 16, 16, frequency);
 		
-		/*// GPU:
+		int[][] height = new int[16][16];
 		
-		float[] noise = SimplexNoiseGpu2D.calculate(chunkXMin * rarity, chunkZMin * rarity, 16, 16, rarity);
-		
-		for (int x = 0; x < 16; x++)
+		for (int x = 0; x < 16; x++) {
 				for (int z = 0; z < 16; z++) {
 					
 					int i = x + z*16;
@@ -57,22 +47,24 @@ public class CoreGenerator {
 						posY.add(y);
 						posZ.add(z + chunkZMin);
 					}
+					
+					height[x][z] = (int) noise[i];
 				}
-		//*/
+		}
 		
-		Short[] blockArray = blockIDs.toArray(new Short[blockIDs.size()]);
-		Integer[] posXArray = posX.toArray(new Integer[posX.size()]);
-		Integer[] posYArray = posY.toArray(new Integer[posY.size()]);
-		Integer[] posZArray = posZ.toArray(new Integer[posZ.size()]);
+		world.setBlockGroup(blockIDs, posX, posY, posZ);
 		
-		world.setBlockGroup(blockArray, posXArray, posYArray, posZArray);
+		// Do biome features
+		selector.getBiome(chunkX, chunkZ).getComponents().forEach((component) -> {
+			component.getActivation().activate(world, chunkX, chunkZ, height, component::applyComponent);
+		});
 	}
 
-	public static PrimordialWorld getWorld() {
+	public PrimordialWorld getWorld() {
 		return world;
 	}
 
-	public static void setWorld(PrimordialWorld world) {
-		CoreGenerator.world = world;
+	public BiomeSelector getSelector() {
+		return selector;
 	}
 }

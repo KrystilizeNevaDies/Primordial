@@ -8,7 +8,7 @@ public class AsyncAction<A, B> implements Runnable {
 	private A first;
 	private B second;
 	
-	public AsyncAction(BiConsumer<A, B> consumer, A first, B second) {
+	public AsyncAction(A first, B second, BiConsumer<A, B> consumer) {
 		this.consumer = consumer;
 		this.first = first;
 		this.second = second;
