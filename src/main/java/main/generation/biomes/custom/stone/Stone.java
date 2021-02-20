@@ -1,12 +1,11 @@
 package main.generation.biomes.custom.stone;
 
-import java.util.Collection;
 import java.util.List;
 
-import main.config.biome.BiomeConfig;
-import main.generation.features.GenerationComponent;
-import main.generation.features.custom.components.BoulderComponent;
-import main.generation.features.custom.components.SquareTower;
+import main.generation.biomes.BiomeConfig;
+import main.generation.components.GenerationComponent;
+import main.generation.components.custom.SquareTowerComponent;
+import main.generation.components.custom.UndergroundBlockPatchComponent;
 import main.util.Pair;
 import net.minestom.server.instance.block.Block;
 
@@ -15,7 +14,7 @@ import net.minestom.server.instance.block.Block;
  * 
  * @author Krystilize
  */
-public class StoneBiome implements BiomeConfig {
+public class Stone implements BiomeConfig {
 	
 	@Override
 	public Pair<Double, Double> getTemperature() {
@@ -32,7 +31,7 @@ public class StoneBiome implements BiomeConfig {
 	@Override
 	public Pair<Double, Double> getElevation() {
 		// Medium elevation with little range
-		return new Pair<Double, Double>(0.45, 0.55);
+		return new Pair<Double, Double>(0.45, 0.05);
 	}
 
 	@Override
@@ -44,20 +43,31 @@ public class StoneBiome implements BiomeConfig {
 	@Override
 	public Integer getRarity() {
 		// Should not be very rare
-		return 60;
+		return 50;
 	}
 
 	@Override
-	public List<Short> getTerrainBlocks() {
+	public Pair<double[], short[]> getTerrainBlocks() {
 		// Bunch of stones
-		return List.of(
+		double[] weightings = {
+			1.0,
+			0.8,
+			0.6,
+			0.4,
+			0.2,
+			0.0
+		};
+		
+		short[] blockIDs = {
 			Block.STONE.getBlockId(),
 			Block.GRANITE.getBlockId(),
-			Block.COBBLESTONE.getBlockId(),
-			Block.STONE_BRICKS.getBlockId(),
 			Block.ANDESITE.getBlockId(),
-			Block.DIORITE.getBlockId()
-		);
+			Block.DIORITE.getBlockId(),
+			Block.BLACKSTONE.getBlockId(),
+			Block.BEDROCK.getBlockId()
+		};
+		
+		return new Pair<double[], short[]>(weightings, blockIDs);
 	}
 
 	@Override
@@ -81,7 +91,12 @@ public class StoneBiome implements BiomeConfig {
 	}
 
 	@Override
-	public Collection<GenerationComponent> getComponents() {
-		return List.of(new SquareTower(this), new BoulderComponent());
+	public List<GenerationComponent> getComponents() {
+		return List.of(
+			new SquareTowerComponent(Block.STONE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.05, Block.DIORITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.05, Block.ANDESITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.05, Block.GRANITE.getBlockId())
+		);
 	}
 }

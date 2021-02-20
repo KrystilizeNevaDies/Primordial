@@ -3,6 +3,7 @@ package main;
 import java.io.File;
 import java.io.IOException;
 
+import main.minestom.MinestomServer;
 import maml.MAMLFile;
 import maml.values.MAMLString;
 import maml.values.MAMLTable;

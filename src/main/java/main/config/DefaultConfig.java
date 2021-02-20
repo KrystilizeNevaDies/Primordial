@@ -3,8 +3,8 @@ package main.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import main.config.biome.BiomeConfig;
 import main.config.world.WorldConfig;
+import main.generation.biomes.BiomeConfig;
 import main.generation.biomes.CustomBiome;
 
 /**
@@ -15,6 +15,10 @@ import main.generation.biomes.CustomBiome;
  * @author Krystilize
  */
 public class DefaultConfig implements WorldConfig {
+	
+	public DefaultConfig(double chunksToGenerate) {}
+	
+	public DefaultConfig() {}
 	
 	@Override
 	public Map<String, BiomeConfig> getBiomeConfigs() {
@@ -34,5 +38,4 @@ public class DefaultConfig implements WorldConfig {
 	public String getWorldName() {
 		return "DefaultWorld";
 	}
-	
 }

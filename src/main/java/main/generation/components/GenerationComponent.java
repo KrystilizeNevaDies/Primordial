@@ -1,4 +1,6 @@
-package main.generation.features;
+package main.generation.components;
+
+import java.util.List;
 
 import main.world.PrimordialWorld;
 
@@ -11,15 +13,9 @@ public interface GenerationComponent {
 	 * The specified coords depend on the type of activation:
 	 * <br>
 	 * RANDOMCHUNK - chunkX, 0, chunkZ<br>
-	 * RANDOMPOSITION - posX, posY, posZ<br>
 	 * RANDOMTERRAINHEIGHT - posX, posY, posZ<br>
 	 * <br>
 	 * ALLCHUNK - chunkX, 0, chunkZ<br>
-	 * ALLPOSITION - posX, posY, posZ<br>
-	 * ALLTERRAINHEIGHT - posX, posY, posZ<br>
-	 * 
-	 * @param world
-	 * @param coords
 	 */
-	public void applyComponent(PrimordialWorld world, int x, int y, int z, int[][] height);
+	public void applyComponent(PrimordialWorld world, int x, int y, int z, double[][][] noiseMap, double weighting, List<Short> blockIDs, List<Integer> arrayX, List<Integer> arrayY, List<Integer> arrayZ);
 }

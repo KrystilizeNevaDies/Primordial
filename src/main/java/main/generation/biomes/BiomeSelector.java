@@ -1,29 +1,33 @@
 package main.generation.biomes;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import ee.jjanno.libjsimplex.noise.gpu.SimplexNoiseGpu3D;
-import main.config.biome.BiomeConfig;
+import main.noise.PrimordialNoise;
+import main.util.MathUtils;
 import main.util.Pair;
+import net.minestom.server.utils.chunk.ChunkUtils;
 
 public class BiomeSelector {
 	private Map<UUID, BiomeConfig> biomes;
+	private Map<Long, Pair<double[][], BiomeConfig[][]>> biomeMap;
 	private int temperatureNoiseSeed;
 	private int humidityNoiseSeed;
 	private int elevationNoiseSeed;
 	private int vegetationNoiseSeed;
+	private static final float frequency = (float) 0.01;
 	
 	/**
 	 * Creates a BiomeSelecter using the specified biomes
 	 * @param biomes
 	 */
 	public BiomeSelector(Map<String, BiomeConfig> biomes, Integer seed) {
-		// Set noises
-		
-		// Temperary random used to generate seeds
+		// Temporary random used to generate seeds
 		Random random = new Random();
 		random.setSeed(seed);
 		
@@ -42,110 +46,117 @@ public class BiomeSelector {
 		});
 		
 		this.biomes = biomeList;
+		
+		// set biomeMap
+		biomeMap = new HashMap<Long, Pair<double[][], BiomeConfig[][]>>();
+		
 	}
 	
-	public BiomeConfig[] getBiomes(int chunkX, int chunkZ) {
+	public Pair<double[][], BiomeConfig[][]> getBiomes(int chunkX, int chunkZ) {
 		
-		float frequency = (float) 0.03;
+		long chunkIndex = ChunkUtils.getChunkIndex(chunkX, chunkZ);
+		
+		Pair<double[][], BiomeConfig[][]> saved = biomeMap.get(chunkIndex);
+		
+		if (saved != null)
+			return saved;
 		
 		// Get noises
-		float[] temperature = SimplexNoiseGpu3D.calculate(temperatureNoiseSeed + chunkX * frequency, 0, temperatureNoiseSeed + chunkZ * frequency, 4, 4, 64, frequency);
-		float[] humidity = SimplexNoiseGpu3D.calculate(humidityNoiseSeed + chunkX * frequency, 0, humidityNoiseSeed + chunkZ * frequency, 4, 4, 64, frequency);
-		float[] elevation = SimplexNoiseGpu3D.calculate(elevationNoiseSeed + chunkX * frequency, 0, elevationNoiseSeed + chunkZ * frequency, 4, 4, 64, frequency);
-		float[] vegetation = SimplexNoiseGpu3D.calculate(vegetationNoiseSeed + chunkX * frequency, 0, vegetationNoiseSeed + chunkZ * frequency, 4, 4, 64, frequency);
+		float[] temperature = PrimordialNoise.getCloverFractalNoise(chunkX, chunkZ, 16, 16, frequency, temperatureNoiseSeed);
+		float[] humidity = PrimordialNoise.getCloverFractalNoise(chunkX, chunkZ, 16, 16, frequency, humidityNoiseSeed);
+		float[] elevation = PrimordialNoise.getCloverFractalNoise(chunkX, chunkZ, 16, 16, frequency, elevationNoiseSeed);
+		float[] vegetation = PrimordialNoise.getCloverFractalNoise(chunkX, chunkZ, 16, 16, frequency, vegetationNoiseSeed);
+		
+		int arraySize = biomes.size();
 		
 		// return array
-		BiomeConfig[] returnArray = new BiomeConfig[1024];
+		BiomeConfig[][] returnBiomeArray = new BiomeConfig[256][arraySize];
+		double[][] returnWeightArray = new double[256][arraySize];
 		
-		for (int i = 0; i < returnArray.length; i++) {
+		// Specify comparator
+		Comparator<Pair<Double, BiomeConfig>> comparator = (first, second) -> {
+			return (int) Math.signum(first.getFirst() - second.getFirst());
+		};
+		
+		for (int i = 0; i < returnBiomeArray.length; i++) {
 			// Pair with match index and biomeconfig
-			var match = new Pair<Double, BiomeConfig>(1.0, null);
+			List<Pair<Double, BiomeConfig>> biomeList = new ArrayList<Pair<Double, BiomeConfig>>();
 			
-			// Test each biome
+			// Add each biome
 			for (BiomeConfig biome : biomes.values()) {
 				
 				// Fit the biome to the properties
 				double biomeFit = matchBiome(biome, temperature[i], humidity[i], elevation[i], vegetation[i]);
 				
-				// If biome is better then recorded, place into match
-				if (biomeFit < match.getFirst() || match.getSecond() == null) {
-					match.setFirst(biomeFit);
-					match.setSecond(biome);
-				}
+				// Add to arraylist
+				biomeList.add(new Pair<Double, BiomeConfig>(biomeFit, biome));
 			}
 			
-			// Set best match to array
-			returnArray[i] = match.getSecond();
+			// Sort array
+			biomeList.sort(comparator);
+			
+			// Add biomes
+			for (int j = 0; j < arraySize; j++) {
+				returnWeightArray[i][j] = biomeList.get(j).getFirst();
+				returnBiomeArray[i][j] = biomeList.get(j).getSecond();
+			}
+			
+			// Normalise weightings
+			MathUtils.normaliseArray(returnWeightArray[i]);
 		}
 		
-		return returnArray;
+		// Construct pair
+		var returnPair = new Pair<double[][], BiomeConfig[][]>(returnWeightArray, returnBiomeArray);
+		
+		// Save config
+		biomeMap.put(chunkIndex, returnPair);
+		
+		return returnPair;
 	}
+	
 	/**
-	 * Gets the best fitting biome for this chunk (slow)
+	 * Gets the best fitting biome for this chunk
 	 * 
 	 * @param chunkX
 	 * @param chunkZ
 	 * @return
 	 */
-	public BiomeConfig getBiome(int chunkX, int chunkZ) {
+	public Pair<double[], BiomeConfig[]> getBiome(int chunkX, int chunkZ) {
 		
-		float frequency = (float) 0.03;
+		long chunkIndex = ChunkUtils.getChunkIndex(chunkX, chunkZ);
 		
-		// Get noises
-		float temperature = SimplexNoiseGpu3D.calculate(temperatureNoiseSeed + chunkX * frequency, 0, temperatureNoiseSeed + chunkZ * frequency, 1, 1, 1, frequency)[0];
-		float humidity = SimplexNoiseGpu3D.calculate(humidityNoiseSeed + chunkX * frequency, 0, humidityNoiseSeed + chunkZ * frequency, 1, 1, 1, frequency)[0];
-		float elevation = SimplexNoiseGpu3D.calculate(elevationNoiseSeed + chunkX * frequency, 0, elevationNoiseSeed + chunkZ * frequency, 1, 1, 1, frequency)[0];
-		float vegetation = SimplexNoiseGpu3D.calculate(vegetationNoiseSeed + chunkX * frequency, 0, vegetationNoiseSeed + chunkZ * frequency, 1, 1, 1, frequency)[0];
+		Pair<double[][], BiomeConfig[][]> saved = biomeMap.get(chunkIndex);
 		
-		// Pair with match index and biomeconfig
-		var match = new Pair<Double, BiomeConfig>(1.0, null);
-		
-		// Test each biome
-		for (BiomeConfig biome : biomes.values()) {
-			
-			// Fit the biome to the properties
-			double biomeFit = matchBiome(biome, temperature, humidity, elevation, vegetation);
-			
-			// If biome is better then recorded, place into match
-			if (biomeFit < match.getFirst() || match.getSecond() == null) {
-				match.setFirst(biomeFit);
-				match.setSecond(biome);
-			}
+		if (saved == null) {
+			saved = getBiomes(chunkX, chunkZ);
 		}
 		
-		return match.getSecond();
+		// Create new pair
+		Pair<double[], BiomeConfig[]> returnPair = new Pair<double[], BiomeConfig[]>(saved.getFirst()[0], saved.getSecond()[0]); 
+		
+		return returnPair;
 	}
 	
 	/**
-	 * Matches the biome with the specified properties and returns a double between 0 and 1
-	 * 0 being best fit, 1 being worst.
+	 * Matches the biome with the specified properties and returns a double above 0
+	 * 0 being best fit, infinity being worst
 	 */
 	public static double matchBiome(BiomeConfig config, double temp, double humid, double elev, double vege) {
 		// Temperature
-		Pair<Double, Double> temperatureRange = config.getTemperature();
-		double temperatureMid = ((temperatureRange.getFirst() + temperatureRange.getSecond()) / 2); 
-		double temperatureDiff = Math.abs(temperatureMid - temp);
-		if (temp > temperatureRange.getFirst() && temp < temperatureRange.getSecond()) temperatureDiff = Math.pow(temperatureDiff, 0.5);
+		double temperatureDiff = Math.abs(config.getAverageTemperature() - temp);
 		
 		// Humidity
-		Pair<Double, Double> humidityRange = config.getTemperature();
-		double humidityMid = ((humidityRange.getFirst() + humidityRange.getSecond()) / 2); 
-		double humidityDiff = Math.abs(humidityMid - temp);
-		if (temp > humidityRange.getFirst() && temp < humidityRange.getSecond()) humidityDiff = Math.pow(humidityDiff, 0.5);
+		double humidityDiff = Math.abs(config.getAverageHumidity() - temp);
 		
 		// Elevation
-		Pair<Double, Double> elevationRange = config.getTemperature();
-		double elevationMid = ((elevationRange.getFirst() + elevationRange.getSecond()) / 2); 
-		double elevationDiff = Math.abs(elevationMid - temp);
-		if (temp > elevationRange.getFirst() && temp < elevationRange.getSecond()) elevationDiff = Math.pow(elevationDiff, 0.5);
+		double elevationDiff = Math.abs(config.getAverageElevation() - temp);
 		
 		// Vegetation
-		Pair<Double, Double> vegetationRange = config.getTemperature();
-		double vegetationMid = ((vegetationRange.getFirst() + vegetationRange.getSecond()) / 2); 
-		double vegetationDiff = Math.abs(vegetationMid - temp);
-		if (temp > vegetationRange.getFirst() && temp < vegetationRange.getSecond()) vegetationDiff = Math.pow(vegetationDiff, 0.5);
+		double vegetationDiff = Math.abs(config.getAverageVegetation() - temp);
 		
-		// Average of all
-		return (temperatureDiff + humidityDiff + elevationDiff + vegetationDiff) / 4;
+		// Total
+		double total = (temperatureDiff + humidityDiff + elevationDiff + vegetationDiff + ((double) config.getRarity() * 0.01)) / 5.0;
+		
+		return total;
 	}
 }

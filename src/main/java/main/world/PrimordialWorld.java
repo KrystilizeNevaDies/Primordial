@@ -3,6 +3,9 @@ package main.world;
 import java.util.List;
 import java.util.Random;
 
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Shorts;
+
 public interface PrimordialWorld {
 	
 	/**
@@ -28,7 +31,7 @@ public interface PrimordialWorld {
 	 * @param arrayY the block's y coordinations in an ordered array
 	 * @param arrayZ the block's z coordinations in an ordered array
 	 */
-	public void setBlockGroup(Short[] blockIDs, Integer[] arrayX, Integer[] arrayY, Integer[] arrayZ);
+	public void setBlockGroup(short[] blockIDs, int[] arrayX, int[] arrayY, int[] arrayZ);
 	
 	/**
 	 * Sets a group of blocks into the world (most efficient)
@@ -45,10 +48,10 @@ public interface PrimordialWorld {
 	 */
 	public default void setBlockGroup(List<Short> blockIDs, List<Integer> arrayX, List<Integer> arrayY, List<Integer> arrayZ) {
 		
-		Short[] blockArray = blockIDs.toArray(new Short[blockIDs.size()]);
-		Integer[] posXArray = arrayX.toArray(new Integer[arrayX.size()]);
-		Integer[] posYArray = arrayY.toArray(new Integer[arrayY.size()]);
-		Integer[] posZArray = arrayZ.toArray(new Integer[arrayZ.size()]);
+		short[] blockArray = Shorts.toArray(blockIDs);
+		int[] posXArray = Ints.toArray(arrayX);
+		int[] posYArray = Ints.toArray(arrayY);
+		int[] posZArray = Ints.toArray(arrayZ);
 		
 		this.setBlockGroup(blockArray, posXArray, posYArray, posZArray);
 	};
@@ -66,7 +69,7 @@ public interface PrimordialWorld {
 	 * @param arrayY the block's y coordinations in an ordered array
 	 * @param arrayZ the block's z coordinations in an ordered array
 	 */
-	public void setBlockGroup(int x, int y, int z, Short[] blockIDs, Integer[] arrayX, Integer[] arrayY, Integer[] arrayZ);
+	public void setBlockGroup(int x, int y, int z, short[] blockIDs, int[] arrayX, int[] arrayY, int[] arrayZ);
 	
 	/**
 	 * Sets a group of blocks into the world (most efficient)
@@ -83,10 +86,10 @@ public interface PrimordialWorld {
 	 */
 	public default void setBlockGroup(int x, int y, int z, List<Short> blockIDs, List<Integer> arrayX, List<Integer> arrayY, List<Integer> arrayZ) {
 		
-		Short[] blockArray = blockIDs.toArray(new Short[blockIDs.size()]);
-		Integer[] posXArray = arrayX.toArray(new Integer[arrayX.size()]);
-		Integer[] posYArray = arrayY.toArray(new Integer[arrayY.size()]);
-		Integer[] posZArray = arrayZ.toArray(new Integer[arrayZ.size()]);
+		short[] blockArray = Shorts.toArray(blockIDs);
+		int[] posXArray = Ints.toArray(arrayX);
+		int[] posYArray = Ints.toArray(arrayY);
+		int[] posZArray = Ints.toArray(arrayZ);
 		
 		this.setBlockGroup(x, y, z, blockArray, posXArray, posYArray, posZArray);
 	};

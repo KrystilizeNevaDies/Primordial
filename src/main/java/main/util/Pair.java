@@ -1,8 +1,8 @@
 package main.util;
 
 public class Pair<F, S> {
-	F first;
-	S second;
+	private F first;
+	private S second;
 	
 	public Pair(F first, S second) {
 		this.first = first;

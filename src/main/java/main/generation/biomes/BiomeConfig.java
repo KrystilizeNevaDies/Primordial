@@ -1,9 +1,8 @@
-package main.config.biome;
+package main.generation.biomes;
 
-import java.util.Collection;
 import java.util.List;
 
-import main.generation.features.GenerationComponent;
+import main.generation.components.GenerationComponent;
 import main.util.Pair;
 
 public interface BiomeConfig {
@@ -78,9 +77,9 @@ public interface BiomeConfig {
 	/**
 	 * Gets a list of all biome-specific components to apply when generating this biome.
 	 * 
-	 * @return Collection the collection of components
+	 * @return List the list of components
 	 */
-	public Collection<GenerationComponent> getComponents();
+	public List<GenerationComponent> getComponents();
 	
 	/**
 	 * Gets the rarity of this biome.
@@ -90,11 +89,18 @@ public interface BiomeConfig {
 	public Integer getRarity();
 	
 	/**
-	 * Gets the blocks that make up the terrain of this biome
+	 * Gets the blocks that make up the terrain of this biome and their respective height deltas (0 and above).
+	 * e.g:
+	 * <br>
+	 * double[] weightings = {0.5, 0.4};
+	 * <br>
+	 * short[] blockIDs = {Block.GRASS_BLOCK.getBlockId(), Block.STONE.getBlockId()};
+	 * <br>
+	 * new Pair{@literal <double[], short[]>}(weightings, blockIDs);
 	 * 
-	 * @return Collection<Short> BlockIDs of the latest minecraft version e.g. List.of(Block.STONE.getBlockID(), Block.GRASS.getBlockID())
+	 * @return Pair<double[], short[]> deltas + blockIDs of the biome
 	 */
-	public List<Short> getTerrainBlocks();
+	public Pair<double[], short[]> getTerrainBlocks();
 	
 	/**
 	 * Gets the fog color of this biome.
@@ -123,4 +129,13 @@ public interface BiomeConfig {
 	 * @return Integer Hex RGB value e.g. 0xED04FA
 	 */
 	public int getWaterFogColor();
+	
+	/**
+	 * Gets the name of this biome.
+	 * 
+	 * @return String The name e.g. Plains
+	 */
+	public default String getName() {
+		return this.getClass().getSimpleName();
+	};
 }

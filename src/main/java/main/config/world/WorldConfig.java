@@ -2,7 +2,7 @@ package main.config.world;
 
 import java.util.Map;
 
-import main.config.biome.BiomeConfig;
+import main.generation.biomes.BiomeConfig;
 
 public interface WorldConfig {
 	/**
