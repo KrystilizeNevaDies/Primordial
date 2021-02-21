@@ -16,8 +16,5 @@ dependencies {
     implementation 'com.github.KrystilizeNevaDies:JavaMAML:1a9ff64742'
     
     // Minestom
-    compile 'com.github.Minestom:Minestom:04c792c'
-    
-    // LibJSimplex
-    implementation 'com.github.KrystilizeNevaDies:libjsimplex:ec1d0db23e'
+    compile 'com.github.Minestom:Minestom:427632d'
 }
