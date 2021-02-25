@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import main.config.DefaultConfig;
+import main.config.ExperimentalConfig;
 import main.config.world.WorldConfig;
 import maml.MAMLFile;
 import maml.values.MAMLTable;
@@ -35,6 +36,7 @@ public class MinestomServer {
     	
     	// Get config
     	MAMLTable config = new MAMLTable();
+    	
 		try {
 			config = MAMLFile.parse(args[0]);
 		} catch (IOException e) {
@@ -70,10 +72,10 @@ public class MinestomServer {
         	
         	Position playerPos = player.getPosition();
         	
-        	int y = 0;
+        	int y = 256;
         	
         	while(player.getInstance().getBlock(playerPos.clone().add(0, y, 0).toBlockPosition()) != Block.AIR) {
-        		y++;
+        		y--;
         	}
         	
         	playerPos.add(0, y, 0);
@@ -84,6 +86,9 @@ public class MinestomServer {
         switch (config.getString("Config")) {
         	case "Default":
         		MinestomServer.config = new DefaultConfig();
+        		break;
+        	case "Experimental":
+        		MinestomServer.config = new ExperimentalConfig();
         		break;
         	// TODO: create other configs
         }

@@ -30,14 +30,21 @@ public class TerrainCubeComponent implements GenerationComponent {
 			List<Short> blockIDs, List<Integer> arrayX, List<Integer> arrayY, List<Integer> arrayZ) {
 		Random random = world.getRandom();
 		
+		double randomSize = random.nextDouble() * size;
+		
+		short block = blocks[random.nextInt(blocks.length)];
+		
 		// Get height
-		for (int posX = (int) -size; posX < size + 1; posX++)
-			for (int posZ = (int) -size; posZ < size + 1; posZ++)
-				for (int posY = (int) -size; posY < size + 1; posY++) {
-					blockIDs.add(blocks[random.nextInt(blocks.length)]);
-					arrayX.add(posX + x);
-					arrayY.add(posY + y);
-					arrayZ.add(posZ + z);
+		for (int posX = (int) -randomSize; posX < randomSize + 1; posX++)
+			for (int posZ = (int) -randomSize; posZ < randomSize + 1; posZ++)
+				for (int posY = (int) -randomSize; posY < randomSize + 1; posY++) {
+					if (posX < 16 && posX > 0)
+					if (posZ < 16 && posZ > 0) {
+						blockIDs.add(block);
+						arrayX.add(posX + x);
+						arrayY.add(posY + y);
+						arrayZ.add(posZ + z);
+					}
 				}
 
 	}

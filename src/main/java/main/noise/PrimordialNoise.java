@@ -51,7 +51,7 @@ public class PrimordialNoise {
 		return noise.frostNoise(x * frequency, z * frequency);
 	}
 	
-	public static float[] getCloverFractalNoise(double x, double z, int width, int height, float frequency, int seed) {
+	public static float[] getCloverFractalNoise(double x, double z, int width, int height, double frequency, int seed) {
 		CloverNoise.Noise2D noise = cloverNoises.get(seed);
 		
 		if (noise == null) {

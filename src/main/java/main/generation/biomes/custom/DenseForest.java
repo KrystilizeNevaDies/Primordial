@@ -1,10 +1,12 @@
-package main.generation.biomes.custom.stone;
+package main.generation.biomes.custom;
 
 import java.util.List;
 
 import main.generation.biomes.BiomeConfig;
 import main.generation.components.GenerationComponent;
-import main.generation.components.custom.RandomTerrainHeightBlocksComponent;
+import main.generation.components.custom.BedrockComponent;
+import main.generation.components.custom.CaveCarverComponent;
+import main.generation.components.custom.RandomTerrainHeightBlockComponent;
 import main.generation.components.custom.SmallTreeComponent;
 import main.generation.components.custom.UndergroundBlockPatchComponent;
 import main.util.Pair;
@@ -15,18 +17,18 @@ import net.minestom.server.instance.block.Block;
  * 
  * @author Krystilize
  */
-public class ScatteredForest implements BiomeConfig {
+public class DenseForest implements BiomeConfig {
 	
 	@Override
 	public Pair<Double, Double> getTemperature() {
-		// Trees need average temps
-		return new Pair<Double, Double>(0.25, 0.75);
+		// Dense trees need higher temps
+		return new Pair<Double, Double>(0.50, 0.80);
 	}
 
 	@Override
 	public Pair<Double, Double> getHumidity() {
-		// Decently low
-		return new Pair<Double, Double>(0.3, 0.6);
+		// Pretty high humidity
+		return new Pair<Double, Double>(0.6, 0.9);
 	}
 
 	@Override
@@ -42,12 +44,6 @@ public class ScatteredForest implements BiomeConfig {
 	}
 
 	@Override
-	public Integer getRarity() {
-		// Pretty common
-		return 50;
-	}
-
-	@Override
 	public Pair<double[], short[]> getTerrainBlocks() {
 		// A standard range of blocks
 		double[] weightings = {
@@ -56,10 +52,6 @@ public class ScatteredForest implements BiomeConfig {
 			0.90,
 			0.85,
 			0.80,
-			0.06,
-			0.05,
-			0.04,
-			0.03,
 		};
 		
 		short[] blockIDs = {
@@ -68,10 +60,6 @@ public class ScatteredForest implements BiomeConfig {
 			Block.STONE.getBlockId(),
 			Block.BLACKSTONE.getBlockId(),
 			Block.STONE.getBlockId(),
-			Block.STONE.getBlockId(),
-			Block.IRON_ORE.getBlockId(),
-			Block.GOLD_ORE.getBlockId(),
-			Block.BEDROCK.getBlockId(),
 		}; 
 		
 		return new Pair<double[], short[]>(weightings, blockIDs);
@@ -100,11 +88,19 @@ public class ScatteredForest implements BiomeConfig {
 	@Override
 	public List<GenerationComponent> getComponents() {
 		return List.of(
-			new SmallTreeComponent(0.001, Block.BIRCH_LOG.getBlockId(), Block.BIRCH_LEAVES.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.DIORITE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.ANDESITE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.GRANITE.getBlockId()),
-			new RandomTerrainHeightBlocksComponent(0, 0.1, Block.GRASS.getBlockId())
+			new CaveCarverComponent(),
+			new UndergroundBlockPatchComponent(0.5, Block.DIORITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.ANDESITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.GRANITE.getBlockId()),
+			new RandomTerrainHeightBlockComponent(0, 0.5, Block.GRASS.getBlockId()),
+			new RandomTerrainHeightBlockComponent(0, 0.5, Block.TALL_GRASS.getBlockId()),
+			new RandomTerrainHeightBlockComponent(0, 0.5, Block.OAK_LEAVES.getBlockId()),
+			new RandomTerrainHeightBlockComponent(0, 0.5, Block.ACACIA_WOOD.getBlockId()),
+			new SmallTreeComponent(0.9, Block.BIRCH_LOG.getBlockId(), Block.BIRCH_LEAVES.getBlockId()),
+			new SmallTreeComponent(0.9, Block.OAK_LOG.getBlockId(), Block.OAK_LEAVES.getBlockId()),
+			new SmallTreeComponent(0.9, Block.DARK_OAK_LOG.getBlockId(), Block.DARK_OAK_LEAVES.getBlockId()),
+			new SmallTreeComponent(0.9, Block.SPRUCE_LOG.getBlockId(), Block.SPRUCE_LEAVES.getBlockId()),
+			new BedrockComponent()
 		);
 	}
 }

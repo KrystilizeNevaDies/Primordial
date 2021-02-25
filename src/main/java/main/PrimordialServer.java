@@ -1,6 +1,7 @@
 package main;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import main.minestom.MinestomServer;
@@ -13,19 +14,17 @@ public class PrimordialServer {
     	
     	MAMLTable config = new MAMLTable();
     	
-    	// Check args for config
-    	for (int i = 0; i < args.length; i++) {
-    		if (args[i].equals("-config")) {
-    			try {
-					config = MAMLFile.parse(new File(args[i + 1]));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-    		}
-    	}
+    	// Check for config
+    	File configFile = new File("Config.maml");
+    	
+    	if (configFile.isFile())
+		try {
+			config = MAMLFile.parse(configFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     	
     	// Ensure minimal config is implemented
-    	
     	if (!config.exists(new MAMLString("Engine"))) {
     		config.set(new MAMLString("Engine"), new MAMLString("Minestom"));
     	}
@@ -34,6 +33,20 @@ public class PrimordialServer {
     		config.set(new MAMLString("Config"), new MAMLString("Default"));
     	}
     	
+    	// Try to save config file
+    	try {
+    		configFile.createNewFile();
+    		
+			FileWriter writer = new FileWriter(configFile);
+			
+			writer.write(config.toFileString());
+			
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
     	
     	switch(config.getString("Engine")) {
     		case "Minestom":

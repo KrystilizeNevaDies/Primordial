@@ -1,9 +1,11 @@
-package main.generation.biomes.custom.stone;
+package main.generation.biomes.custom;
 
 import java.util.List;
 
 import main.generation.biomes.BiomeConfig;
 import main.generation.components.GenerationComponent;
+import main.generation.components.custom.BedrockComponent;
+import main.generation.components.custom.CaveCarverComponent;
 import main.generation.components.custom.SquareTowerComponent;
 import main.generation.components.custom.UndergroundBlockPatchComponent;
 import main.util.Pair;
@@ -30,20 +32,14 @@ public class Stone implements BiomeConfig {
 
 	@Override
 	public Pair<Double, Double> getElevation() {
-		// Medium elevation with little range
-		return new Pair<Double, Double>(0.45, 0.05);
+		// High elevation with extremely small range
+		return new Pair<Double, Double>(0.9, 0.05);
 	}
 
 	@Override
 	public Pair<Double, Double> getVegetation() {
 		// Zero vegetation
 		return new Pair<Double, Double>(0.0, 0.0);
-	}
-
-	@Override
-	public Integer getRarity() {
-		// Should not be very rare
-		return 50;
 	}
 
 	@Override
@@ -54,8 +50,7 @@ public class Stone implements BiomeConfig {
 			0.8,
 			0.6,
 			0.4,
-			0.2,
-			0.0
+			0.2
 		};
 		
 		short[] blockIDs = {
@@ -63,8 +58,7 @@ public class Stone implements BiomeConfig {
 			Block.GRANITE.getBlockId(),
 			Block.ANDESITE.getBlockId(),
 			Block.DIORITE.getBlockId(),
-			Block.BLACKSTONE.getBlockId(),
-			Block.BEDROCK.getBlockId()
+			Block.BLACKSTONE.getBlockId()
 		};
 		
 		return new Pair<double[], short[]>(weightings, blockIDs);
@@ -93,10 +87,12 @@ public class Stone implements BiomeConfig {
 	@Override
 	public List<GenerationComponent> getComponents() {
 		return List.of(
+			new CaveCarverComponent(),
 			new SquareTowerComponent(Block.STONE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.DIORITE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.ANDESITE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.GRANITE.getBlockId())
+			new UndergroundBlockPatchComponent(0.5, Block.DIORITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.ANDESITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.GRANITE.getBlockId()),
+			new BedrockComponent()
 		);
 	}
 }

@@ -7,6 +7,7 @@ import main.generation.biomes.BiomeConfig;
 import main.generation.biomes.BiomeSelector;
 import main.noise.PrimordialNoise;
 import main.util.BiomeUtils;
+import main.util.MathUtils;
 import main.util.Pair;
 import main.world.PrimordialWorld;
 
@@ -21,6 +22,7 @@ public class CoreGenerator {
 	private static BiomeSelector selector;
 	private static Random random;
 	private static int seedHash;
+	private static double frequency = 0.0005;
 	
 	public static void init(PrimordialWorld world, BiomeSelector selector) {
 		CoreGenerator.world = world;
@@ -31,7 +33,7 @@ public class CoreGenerator {
 	}
 	
 	public static void generateChunk(int chunkX, int chunkZ) {
-		// Create block groups
+		// Create block group
 		ArrayList<Short> blockIDs = new ArrayList<Short>();
 		ArrayList<Integer> arrayX = new ArrayList<Integer>();
 		ArrayList<Integer> arrayY = new ArrayList<Integer>();
@@ -49,11 +51,10 @@ public class CoreGenerator {
 		int chunkXMin =  chunkX * 16;
 		int chunkZMin =  chunkZ * 16;
 		
-		float frequency = (float) 0.01;
-		
 		// Generate noise
-		float[] noise = // PrimordialNoise.batchNoise3D(chunkX, chunkZ, 0, 16, 16, 256, frequency, seedHash);
-				PrimordialNoise.getCloverNoise(chunkX, chunkZ, 16, 16, frequency, seedHash);
+		float[] primaryNoise = PrimordialNoise.getCloverFractalNoise(chunkX, chunkZ, 16, 16, frequency, seedHash);
+		float[] secondaryNoise = PrimordialNoise.getCloverFractalNoise(chunkX, chunkZ, 16, 16, frequency * 2, seedHash * 2);
+		float[] tertiaryNoise = PrimordialNoise.getCloverFractalNoise(chunkX, chunkZ, 16, 16, frequency * 4, seedHash * 3);
 		double[][][] noiseMap = new double[16][2][16];
 		
 		// Main terrain generation
@@ -69,7 +70,9 @@ public class CoreGenerator {
 				Pair<Double, Double> elevationFit = BiomeUtils.getElevation(biomeMatch);
 				
 				// Get height
-				int height = heightAt(noise[columnIndex], elevationFit);
+				double[] noiseCollection = {primaryNoise[columnIndex], secondaryNoise[columnIndex], tertiaryNoise[columnIndex]};
+				float noise = (float) MathUtils.weightedAverage(noiseCollection, new double[] {1.333, 1.0, 0.666}, 3);
+				int height = heightAt(noise, elevationFit);
 				
 				int absoluteX = x + chunkXMin;
 				int absoluteZ = z + chunkZMin;
@@ -89,9 +92,8 @@ public class CoreGenerator {
 				// Set height in noiseMap
 				noiseMap[x][1][z] = height;
 				
-				// Do height for column
-				float noiseValue = noise[columnIndex];
-				noiseMap[x][0][z] = noiseValue;
+				// Set noise for column
+				noiseMap[x][0][z] = noise;
 			}
 		}
 		                                                                                  
@@ -101,9 +103,9 @@ public class CoreGenerator {
 		});
 		
 		if (secondaryWeighting > 0.8)
-			secondaryBiome.getComponents().forEach((component) -> {
-				component.getActivation().activate(world, chunkX, chunkZ, noiseMap, secondaryWeighting / 0.8, blockIDs, arrayX, arrayY, arrayZ, component::applyComponent);
-			});
+		secondaryBiome.getComponents().forEach((component) -> {
+			component.getActivation().activate(world, chunkX, chunkZ, noiseMap, secondaryWeighting, blockIDs, arrayX, arrayY, arrayZ, component::applyComponent);
+		});
 		
 		world.setBlockGroup(blockIDs, arrayX, arrayY, arrayZ);
 	}
@@ -112,11 +114,7 @@ public class CoreGenerator {
 		
 		double height = elevation.getFirst() * 128;
 		
-		height += (noise * elevation.getSecond() * 64);
-		
-		height += (noise * elevation.getSecond() * 32);
-		
-		height += (noise * elevation.getSecond() * 16);
+		height += (noise * elevation.getSecond() * 256);
 		
 		return (int) height;
 	}

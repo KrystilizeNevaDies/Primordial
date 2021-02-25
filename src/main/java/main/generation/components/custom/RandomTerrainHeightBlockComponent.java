@@ -7,12 +7,12 @@ import main.generation.components.ComponentType;
 import main.generation.components.GenerationComponent;
 import main.world.PrimordialWorld;
 
-public class RandomTerrainHeightBlocksComponent implements GenerationComponent {
+public class RandomTerrainHeightBlockComponent implements GenerationComponent {
 	short block;
 	int offset;
 	double rarity;
 	
-	public RandomTerrainHeightBlocksComponent(int offset, double rarity, short block) {
+	public RandomTerrainHeightBlockComponent(int offset, double rarity, short block) {
 		this.block = block;
 		this.offset = offset;
 		this.rarity = rarity;

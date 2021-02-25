@@ -33,9 +33,12 @@ public class UndergroundBlockPatchComponent implements GenerationComponent {
 		
 		Random random = world.getRandom();
 		
+		int chunkX = Math.abs(x % 16);
+		int chunkZ = Math.abs(z % 16);
+		
 		double size = maxSize * random.nextDouble();
 		
-		int offsetY = (int) (noiseMap[Math.abs(x % 16)][1][Math.abs(z % 16)] * random.nextDouble());
+		int offsetY = (int) (noiseMap[chunkX][1][chunkZ] * random.nextDouble());
 		
 		short block = blocks[random.nextInt(blocks.length)];
 		

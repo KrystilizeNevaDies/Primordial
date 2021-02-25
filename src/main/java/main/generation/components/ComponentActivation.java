@@ -21,8 +21,6 @@ public class ComponentActivation {
 	 * @return component activation
 	 */
 	public static ComponentActivation of(ComponentType type, double chance) {
-		if (type.equals(ComponentType.RANDOMTERRAINHEIGHT))
-			chance *= 100.0;
 		return new ComponentActivation(type, chance);
 	}
 	
@@ -47,8 +45,8 @@ public class ComponentActivation {
 		return chance;
 	}
 
-	private void setChance(double chance2) {
-		this.chance = chance2;
+	private void setChance(double chance) {
+		this.chance = chance;
 	}
 
 	public void activate(PrimordialWorld world, int chunkX, int chunkZ, double[][][] noiseMap, double weighting,
@@ -68,7 +66,7 @@ public class ComponentActivation {
 					consumer.accept(world, chunkX, 0, chunkZ, noiseMap, weighting, blockIDs, arrayX, arrayY, arrayZ);
 				break;
 			case RANDOMTERRAINHEIGHT:
-				for (int i = 0; i < chance; i++) {
+				while (random.nextDouble() > Math.pow(chance, 2.0)) {
 					int z = random.nextInt(16);
 					int x = random.nextInt(16);
 					consumer.accept(world, chunkXMin + x, (int) noiseMap[x][1][z], chunkZMin + z, noiseMap, weighting, blockIDs, arrayX, arrayY, arrayZ);

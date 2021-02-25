@@ -1,9 +1,11 @@
-package main.generation.biomes.custom.stone;
+package main.generation.biomes.custom;
 
 import java.util.List;
 
 import main.generation.biomes.BiomeConfig;
 import main.generation.components.GenerationComponent;
+import main.generation.components.custom.BedrockComponent;
+import main.generation.components.custom.CaveCarverComponent;
 import main.generation.components.custom.LargeDarkOakTreeComponent;
 import main.generation.components.custom.SmallBushComponent;
 import main.generation.components.custom.UndergroundBlockPatchComponent;
@@ -31,20 +33,14 @@ public class GiantForest implements BiomeConfig {
 
 	@Override
 	public Pair<Double, Double> getElevation() {
-		// Medium elevation with high range
-		return new Pair<Double, Double>(0.45, 0.9);
+		// Medium elevation with little range
+		return new Pair<Double, Double>(0.45, 0.2);
 	}
 
 	@Override
 	public Pair<Double, Double> getVegetation() {
 		// Medium Vegetation
 		return new Pair<Double, Double>(0.4, 0.6);
-	}
-
-	@Override
-	public Integer getRarity() {
-		// Decently rare
-		return 50;
 	}
 
 	@Override
@@ -56,7 +52,6 @@ public class GiantForest implements BiomeConfig {
 			0.90,
 			0.85,
 			0.80,
-			0.0,
 		};
 		
 		short[] blockIDs = {
@@ -65,7 +60,6 @@ public class GiantForest implements BiomeConfig {
 			Block.STONE.getBlockId(),
 			Block.BLACKSTONE.getBlockId(),
 			Block.STONE.getBlockId(),
-			Block.BEDROCK.getBlockId(),
 		}; 
 		
 		return new Pair<double[], short[]>(weightings, blockIDs);
@@ -94,11 +88,13 @@ public class GiantForest implements BiomeConfig {
 	@Override
 	public List<GenerationComponent> getComponents() {
 		return List.of(
+			new CaveCarverComponent(),
 			new LargeDarkOakTreeComponent(0.1),
-			new SmallBushComponent(0.01, Block.BIRCH_WOOD.getBlockId(), Block.JUNGLE_LEAVES.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.DIORITE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.ANDESITE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.05, Block.GRANITE.getBlockId())
+			new SmallBushComponent(0.8, Block.BIRCH_WOOD.getBlockId(), Block.JUNGLE_LEAVES.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.DIORITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.ANDESITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.GRANITE.getBlockId()),
+			new BedrockComponent()
 		);
 	}
 }

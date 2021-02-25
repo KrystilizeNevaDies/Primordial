@@ -91,9 +91,11 @@ public class CustomBatch implements InstanceBatch {
         
         if (possibleChunk != null) {
         	task.accept(possibleChunk);
+        } else {
+        	this.instance.loadChunk(chunkX, chunkZ, task);
         }
         
-        this.instance.loadChunk(chunkX, chunkZ, task);
+        
 		
 		try {
 			latch.await();
@@ -127,7 +129,7 @@ public class CustomBatch implements InstanceBatch {
                     }
 
                     for (BlockData data : dataList) {
-                        data.apply(chunk);
+                    	data.apply(chunk);
                     }
 
                     // Refresh chunk for viewers

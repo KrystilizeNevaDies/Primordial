@@ -5,20 +5,18 @@ import java.util.Map;
 
 import main.config.world.WorldConfig;
 import main.generation.biomes.BiomeConfig;
-import main.generation.biomes.CustomBiomes;
+import main.generation.biomes.ExperimentalBiomes;
 
 /**
- * The default configuration's purpose is to generate a world with a balanced diet consisting of all of Primordial's main features.
- * 
- * 
+ * The experimental configuration's purpose is to have fun
  * 
  * @author Krystilize
  */
-public class DefaultConfig implements WorldConfig {
+public class ExperimentalConfig implements WorldConfig {
 	
-	public DefaultConfig(double chunksToGenerate) {}
+	public ExperimentalConfig(double chunksToGenerate) {}
 	
-	public DefaultConfig() {}
+	public ExperimentalConfig() {}
 	
 	@Override
 	public Map<String, BiomeConfig> getBiomeConfigs() {
@@ -26,7 +24,7 @@ public class DefaultConfig implements WorldConfig {
 		Map<String, BiomeConfig> biomes = new HashMap<String, BiomeConfig>();
 		
 		// Add custom biomes
-		for (BiomeConfig biome : CustomBiomes.getBiomes()) {
+		for (BiomeConfig biome : ExperimentalBiomes.getBiomes()) {
 			biomes.put(biome.getName(), biome);
 		}
 		
@@ -36,6 +34,6 @@ public class DefaultConfig implements WorldConfig {
 
 	@Override
 	public String getWorldName() {
-		return "DefaultWorld";
+		return "ExperimentalWorld";
 	}
 }

@@ -1,9 +1,11 @@
-package main.generation.biomes.custom.stone;
+package main.generation.biomes.custom;
 
 import java.util.List;
 
 import main.generation.biomes.BiomeConfig;
 import main.generation.components.GenerationComponent;
+import main.generation.components.custom.BedrockComponent;
+import main.generation.components.custom.CaveCarverComponent;
 import main.generation.components.custom.TerrainCubeComponent;
 import main.generation.components.custom.UndergroundBlockPatchComponent;
 import main.util.Pair;
@@ -15,7 +17,7 @@ import net.minestom.server.instance.block.Block;
  * @author Krystilize
  */
 public class AmplifiedStone implements BiomeConfig {
-	
+
 	@Override
 	public Pair<Double, Double> getTemperature() {
 		// Stones don't require a specific temperature
@@ -30,22 +32,16 @@ public class AmplifiedStone implements BiomeConfig {
 
 	@Override
 	public Pair<Double, Double> getElevation() {
-		// Medium elevation with high range
-		return new Pair<Double, Double>(0.45, 0.8);
+		// Low elevation with extremely high range
+		return new Pair<Double, Double>(0.1, 1.5);
 	}
 
 	@Override
 	public Pair<Double, Double> getVegetation() {
-		// Small vegetation as rock
-		return new Pair<Double, Double>(0.0, 0.1);
+		// Zero vegetation
+		return new Pair<Double, Double>(0.0, 0.0);
 	}
-
-	@Override
-	public Integer getRarity() {
-		// Should not be very rare
-		return 50;
-	}
-
+	
 	@Override
 	public Pair<double[], short[]> getTerrainBlocks() {
 		// Only stones
@@ -83,10 +79,19 @@ public class AmplifiedStone implements BiomeConfig {
 	@Override
 	public List<GenerationComponent> getComponents() {
 		return List.of(
-			new TerrainCubeComponent(2, 0.005, Block.POLISHED_BLACKSTONE_BRICKS.getBlockId()),
-			new UndergroundBlockPatchComponent(0.1, Block.DIORITE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.1, Block.ANDESITE.getBlockId()),
-			new UndergroundBlockPatchComponent(0.1, Block.GRANITE.getBlockId())
+			new CaveCarverComponent(),
+			new TerrainCubeComponent(7, 0.8,
+				Block.STONE_BRICKS.getBlockId(),
+				Block.COBBLESTONE.getBlockId(),
+				Block.POLISHED_DIORITE.getBlockId(),
+				Block.POLISHED_ANDESITE.getBlockId(),
+				Block.POLISHED_GRANITE.getBlockId(),
+				Block.GRAY_CONCRETE.getBlockId()
+			),
+			new UndergroundBlockPatchComponent(0.5, Block.DIORITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.ANDESITE.getBlockId()),
+			new UndergroundBlockPatchComponent(0.5, Block.GRANITE.getBlockId()),
+			new BedrockComponent()
 		);
 	}
 }

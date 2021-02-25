@@ -82,13 +82,6 @@ public interface BiomeConfig {
 	public List<GenerationComponent> getComponents();
 	
 	/**
-	 * Gets the rarity of this biome.
-	 * 
-	 * @return Integer Rarity. 0 being the least rare (most common), 100 being the most rare (least common)
-	 */
-	public Integer getRarity();
-	
-	/**
 	 * Gets the blocks that make up the terrain of this biome and their respective height deltas (0 and above).
 	 * e.g:
 	 * <br>

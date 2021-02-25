@@ -102,7 +102,7 @@ public class BiomeSelector {
 			}
 			
 			// Normalise weightings
-			MathUtils.normaliseArray(returnWeightArray[i]);
+			MathUtils.clampHighest(returnWeightArray[i]);
 		}
 		
 		// Construct pair
@@ -155,7 +155,7 @@ public class BiomeSelector {
 		double vegetationDiff = Math.abs(config.getAverageVegetation() - temp);
 		
 		// Total
-		double total = (temperatureDiff + humidityDiff + elevationDiff + vegetationDiff + ((double) config.getRarity() * 0.01)) / 5.0;
+		double total = (temperatureDiff + humidityDiff + elevationDiff + vegetationDiff) / 4.0;
 		
 		return total;
 	}
